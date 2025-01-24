@@ -35,13 +35,11 @@ router.post("/signup", async (req, res) => {
     const token = jwt.sign({ email }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
-    res
-      .status(201)
-      .json({
-        message: "User registered successfully",
-        id: newUser._id,
-        token,
-      });
+    res.status(201).json({
+      message: "User registered successfully",
+      id: newUser._id,
+      token,
+    });
   } catch (error) {
     res.status(500).json({ error: "Internal server error" });
   }
@@ -85,13 +83,66 @@ router.get("/me", async (req, res) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await UserModel.findById(decoded.id).select("name email");
+    const user = await UserModel.findById(decoded.id).select("name email ph");
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
     res.status(200).json({ user });
   } catch (error) {
     res.status(401).json({ error: "Invalid token" });
+  }
+});
+
+// Update user details
+router.put("/update", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const { name, email, mobile } = req.body;
+
+    const updatedUser = await UserModel.findByIdAndUpdate(
+      decoded.id,
+      { name, email, ph: mobile },
+      { new: true } // Return the updated document
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res
+      .status(200)
+      .json({ message: "User updated successfully", user: updatedUser });
+  } catch (error) {
+    console.error("Error updating user:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Delete user account
+router.delete("/delete", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    const deletedUser = await UserModel.findByIdAndDelete(decoded.id);
+
+    if (!deletedUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json({ message: "User deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -103,6 +154,5 @@ router.post("/logout", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
-
 
 module.exports = router;
