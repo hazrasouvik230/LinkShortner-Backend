@@ -4,6 +4,7 @@ const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const userRouter = require("./routes/User.Route");
+const linkRouter = require("./routes/Link.Route");
 
 dotenv.config();
 
@@ -22,6 +23,7 @@ app.get("/", (req, res) => {
 })
 
 app.use("/api/user", userRouter);
+app.use("/api/links", linkRouter);
 
 mongoose.connect(process.env.MONGO_URL)
 .then(() => {
