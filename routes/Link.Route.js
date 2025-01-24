@@ -20,13 +20,14 @@ const authenticate = (req, res, next) => {
 
 // Create a new link
 router.post("/", authenticate, async (req, res) => {
-  const { originalLink, shortLink, remarks } = req.body;
+  const { originalLink, shortLink, remarks, expirationDate } = req.body;
   try {
     const newLink = new LinkModel({
       userId: req.userId,
       originalLink,
       shortLink,
       remarks,
+      expirationDate
     });
     await newLink.save();
     res.status(201).json({ message: "Link created successfully", link: newLink });
@@ -34,6 +35,20 @@ router.post("/", authenticate, async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+// Periodic check to update expired links
+setInterval(async () => {
+  try {
+    const now = new Date();
+    const expiredLinks = await LinkModel.updateMany(
+      { expirationDate: { $lte: now }, status: "Active" },
+      { $set: { status: "Inactive" } }
+    );
+    console.log(`Expired links updated: ${expiredLinks.nModified}`);
+  } catch (error) {
+    console.error("Error updating expired links:", error);
+  }
+}, 60 * 1000); // Check every minute
 
 // Fetch all links for a user
 router.get("/", authenticate, async (req, res) => {

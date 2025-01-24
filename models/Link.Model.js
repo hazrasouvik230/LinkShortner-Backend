@@ -23,6 +23,10 @@ const linkSchema = new mongoose.Schema({
     type: String,
     default: "Active",
   },
+  expirationDate: {
+    type: Date,
+    default: null,
+  },
   date: {
     type: Date,
     default: Date.now,
