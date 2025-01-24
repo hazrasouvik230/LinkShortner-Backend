@@ -60,4 +60,23 @@ router.get("/", authenticate, async (req, res) => {
   }
 });
 
+// Delete a specific link by ID
+router.delete("/:id", authenticate, async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Find the link by ID and verify that it belongs to the authenticated user
+    const link = await LinkModel.findOne({ _id: id, userId: req.userId });
+    if (!link) {
+      return res.status(404).json({ error: "Link not found or not authorized" });
+    }
+
+    // Delete the link
+    await LinkModel.deleteOne({ _id: id });
+    res.status(200).json({ message: "Link deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 module.exports = router;
