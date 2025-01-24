@@ -95,4 +95,14 @@ router.get("/me", async (req, res) => {
   }
 });
 
+// Logout route
+router.post("/logout", async (req, res) => {
+  try {
+    res.status(200).json({ message: "Logout successful" });
+  } catch (error) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+
 module.exports = router;
