@@ -2,6 +2,14 @@ const express = require("express");
 const router = express.Router();
 const LinkModel = require("../models/Link.Model");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
+
+// Generate a random short link
+const generateShortLink = async () => {
+  const shortLink = crypto.randomBytes(4).toString("hex"); // Generates a random 8-character string
+  const existingLink = await LinkModel.findOne({ shortLink }); // Check for uniqueness
+  return existingLink ? generateShortLink() : shortLink;
+};
 
 // Middleware to authenticate user
 const authenticate = (req, res, next) => {
@@ -20,18 +28,22 @@ const authenticate = (req, res, next) => {
 
 // Create a new link
 router.post("/", authenticate, async (req, res) => {
-  const { originalLink, shortLink, remarks, expirationDate } = req.body;
+  const { originalLink, remarks, expirationDate } = req.body;
+
   try {
+    const shortLink = await generateShortLink(); // Generate a unique short link
     const newLink = new LinkModel({
       userId: req.userId,
       originalLink,
       shortLink,
       remarks,
-      expirationDate
+      expirationDate,
     });
+
     await newLink.save();
     res.status(201).json({ message: "Link created successfully", link: newLink });
   } catch (error) {
+    console.error("Error creating link:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -131,23 +143,53 @@ const getDeviceName = (userAgent) => {
 //   }
 // });
 // Backend part, just a reminder: Update the click log to return device type and other details
+// router.post("/click/:id", async (req, res) => {
+//   const { id } = req.params;
+//   const userAgent = req.headers["user-agent"];
+  
+//   try {
+//     const link = await LinkModel.findById(id);
+    
+//     if (!link) {
+//       return res.status(404).json({ error: "Link not found" });
+//     }
+    
+//     link.clicks += 1; // Increment the click count
+//     await link.save();
+    
+//     const device = getDeviceName(userAgent); // Get device type
+    
+//     // Send device type along with the response for the frontend to process
+//     res.status(200).json({
+//       message: "Click logged successfully",
+//       originalLink: link.originalLink,
+//       shortLink: link.shortLink,
+//       clicks: link.clicks,
+//       timestamp: new Date(),
+//       ipAddress: req.ip,
+//       userDevice: device, // Send the device info
+//     });
+    
+//   } catch (error) {
+//     console.error("Error logging click:", error);
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// });
 router.post("/click/:id", async (req, res) => {
   const { id } = req.params;
   const userAgent = req.headers["user-agent"];
   
   try {
     const link = await LinkModel.findById(id);
-    
     if (!link) {
       return res.status(404).json({ error: "Link not found" });
     }
-    
-    link.clicks += 1; // Increment the click count
+
+    link.clicks += 1;
     await link.save();
-    
-    const device = getDeviceName(userAgent); // Get device type
-    
-    // Send device type along with the response for the frontend to process
+
+    const device = getDeviceName(userAgent);
+
     res.status(200).json({
       message: "Click logged successfully",
       originalLink: link.originalLink,
@@ -155,9 +197,8 @@ router.post("/click/:id", async (req, res) => {
       clicks: link.clicks,
       timestamp: new Date(),
       ipAddress: req.ip,
-      userDevice: device, // Send the device info
+      userDevice: device,
     });
-    
   } catch (error) {
     console.error("Error logging click:", error);
     res.status(500).json({ error: "Internal server error" });
