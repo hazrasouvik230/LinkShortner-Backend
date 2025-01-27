@@ -205,4 +205,27 @@ router.post("/click/:id", async (req, res) => {
   }
 });
 
+// Update an existing link
+router.put("/:id", authenticate, async (req, res) => {
+  const { id } = req.params;
+  const { originalLink, remarks, expirationDate, status } = req.body;
+
+  try {
+    const updatedLink = await LinkModel.findByIdAndUpdate(
+      id,
+      { originalLink, remarks, expirationDate, status },
+      { new: true }
+    );
+
+    if (!updatedLink) {
+      return res.status(404).json({ error: "Link not found" });
+    }
+
+    res.status(200).json({ link: updatedLink });
+  } catch (error) {
+    console.error("Error updating link:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 module.exports = router;
