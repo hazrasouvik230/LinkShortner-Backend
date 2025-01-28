@@ -114,67 +114,6 @@ const getDeviceName = (userAgent) => {
   }
 };
 
-// router.post("/click/:id", async (req, res) => {
-//   const { id } = req.params;
-//   const userAgent = req.headers["user-agent"];
-
-//   try {
-//     const link = await LinkModel.findById(id);
-
-//     if (!link) {
-//       return res.status(404).json({ error: "Link not found" });
-//     }
-
-//     link.clicks += 1; // Increment the click count
-//     await link.save();
-
-//     res.status(200).json({
-//       message: "Click logged successfully",
-//       originalLink: link.originalLink,
-//       shortLink: link.shortLink,
-//       clicks: link.clicks,
-//       timestamp: new Date(),
-//       ipAddress: req.ip,
-//       userDevice: getDeviceName(userAgent), // Simplified device name
-//     });
-//   } catch (error) {
-//     console.error("Error logging click:", error);
-//     res.status(500).json({ error: "Internal server error" });
-//   }
-// });
-// Backend part, just a reminder: Update the click log to return device type and other details
-// router.post("/click/:id", async (req, res) => {
-//   const { id } = req.params;
-//   const userAgent = req.headers["user-agent"];
-  
-//   try {
-//     const link = await LinkModel.findById(id);
-    
-//     if (!link) {
-//       return res.status(404).json({ error: "Link not found" });
-//     }
-    
-//     link.clicks += 1; // Increment the click count
-//     await link.save();
-    
-//     const device = getDeviceName(userAgent); // Get device type
-    
-//     // Send device type along with the response for the frontend to process
-//     res.status(200).json({
-//       message: "Click logged successfully",
-//       originalLink: link.originalLink,
-//       shortLink: link.shortLink,
-//       clicks: link.clicks,
-//       timestamp: new Date(),
-//       ipAddress: req.ip,
-//       userDevice: device, // Send the device info
-//     });
-    
-//   } catch (error) {
-//     console.error("Error logging click:", error);
-//     res.status(500).json({ error: "Internal server error" });
-//   }
-// });
 router.post("/click/:id", async (req, res) => {
   const { id } = req.params;
   const userAgent = req.headers["user-agent"];
