@@ -8,6 +8,8 @@ const linkRouter = require("./routes/Link.Route");
 
 dotenv.config();
 
+app.set("trust proxy", true);
+
 const corsOptions = {
     origin: "*",
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
